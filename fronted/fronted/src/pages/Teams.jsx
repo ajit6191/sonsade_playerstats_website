@@ -29,11 +29,11 @@ const TeamCard = ({ team }) => {
               className="w-full h-full object-cover rounded-full"
             />
           </div>
-          <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 px-3 py-1 rounded-lg">
+          {/* <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 px-3 py-1 rounded-lg">
             <span className="text-[9px] font-black text-yellow-500 tracking-widest uppercase">
               BLUE
             </span>
-          </div>
+          </div> */}
         </div>
 
         {/* 4. OWNER IMAGE SECTION (Blended) */}
