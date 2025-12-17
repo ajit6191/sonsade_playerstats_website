@@ -8,22 +8,45 @@ import {
   UserCircle,
   Users,
   X,
+  LogOut,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
+import { logoutSuccess } from "../redux/authSlice";
 import logo from "../assets/bg-2.jpeg";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  // Handle scroll effect for a premium sticky feel
+  const { isAuthenticated, role } = useSelector((state) => state.auth);
+
+  // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      await axios.post(
+        "http://localhost:8000/users/logout",
+        {},
+        { withCredentials: true }
+      );
+
+      dispatch(logoutSuccess());
+      navigate("/login");
+    } catch (err) {
+      console.error("Logout failed");
+    }
+  };
 
   const navLinks = [
     { name: "Home", path: "/", icon: Home },
@@ -44,7 +67,7 @@ export default function Navbar() {
       }`}
     >
       <div className="max-w-7xl mx-auto px-5 flex justify-between items-center">
-        {/* --- LOGO SECTION --- */}
+        {/* LOGO */}
         <Link to="/" className="flex items-center gap-3 group">
           <div className="relative">
             <div className="absolute inset-0 bg-green-500 blur-md opacity-20 group-hover:opacity-40 transition-opacity rounded-full" />
@@ -64,22 +87,19 @@ export default function Navbar() {
           </div>
         </Link>
 
-        {/* --- DESKTOP MENU --- */}
+        {/* DESKTOP MENU */}
         <ul className="hidden lg:flex items-center gap-2">
           {navLinks.map((link) => (
             <li key={link.path}>
               <Link
                 to={link.path}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
                   isActive(link.path)
                     ? "bg-green-600 text-white shadow-lg shadow-green-600/30"
                     : "text-slate-300 hover:bg-white/5 hover:text-white"
                 }`}
               >
-                <link.icon
-                  size={18}
-                  strokeWidth={isActive(link.path) ? 2.5 : 2}
-                />
+                <link.icon size={18} />
                 {link.name}
               </Link>
             </li>
@@ -87,18 +107,36 @@ export default function Navbar() {
 
           <div className="h-6 w-[1px] bg-white/10 mx-2" />
 
-          <li>
+          {isAuthenticated && role === "admin" ? (
+            <>
+              <Link
+                to="/admin"
+                className="flex items-center gap-2 bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold border border-white/10 hover:bg-slate-700 transition-all"
+              >
+                <LayoutDashboard size={18} className="text-green-500" />
+                Admin
+              </Link>
+
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 bg-red-600/90 text-white px-4 py-2.5 rounded-xl font-bold hover:bg-red-600 transition-all"
+              >
+                <LogOut size={18} />
+                Logout
+              </button>
+            </>
+          ) : (
             <Link
-              to="/admin"
-              className="flex items-center gap-2 bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold border border-white/10 hover:bg-slate-700 transition-all shadow-inner"
+              to="/login"
+              className="flex items-center gap-2 bg-green-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-green-500 transition-all"
             >
-              <LayoutDashboard size={18} className="text-green-500" />
+              <LayoutDashboard size={18} />
               Admin
             </Link>
-          </li>
+          )}
         </ul>
 
-        {/* --- MOBILE TOGGLE --- */}
+        {/* MOBILE TOGGLE */}
         <button
           onClick={() => setOpen(!open)}
           className="lg:hidden p-2 rounded-xl bg-white/5 border border-white/10 text-white"
@@ -107,9 +145,9 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* --- MOBILE OVERLAY MENU --- */}
+      {/* MOBILE MENU */}
       <div
-        className={`fixed inset-0 top-[72px] bg-slate-950 z-40 lg:hidden transition-transform duration-500 ease-in-out ${
+        className={`fixed inset-0 top-[72px] bg-slate-950 z-40 lg:hidden transition-transform duration-500 ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -119,36 +157,34 @@ export default function Navbar() {
               key={link.path}
               onClick={() => setOpen(false)}
               to={link.path}
-              className={`flex items-center justify-between p-4 rounded-2xl border ${
-                isActive(link.path)
-                  ? "bg-green-600/10 border-green-500/50 text-green-500"
-                  : "bg-white/5 border-white/5 text-slate-300"
-              }`}
+              className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5"
             >
               <div className="flex items-center gap-4">
-                <div
-                  className={`p-2 rounded-lg ${
-                    isActive(link.path)
-                      ? "bg-green-600 text-white"
-                      : "bg-slate-800 text-slate-400"
-                  }`}
-                >
-                  <link.icon size={20} />
-                </div>
+                <link.icon size={20} />
                 <span className="font-bold text-lg">{link.name}</span>
               </div>
-              <ChevronRight size={20} className="opacity-50" />
+              <ChevronRight size={20} />
             </Link>
           ))}
 
-          <Link
-            to="/admin"
-            onClick={() => setOpen(false)}
-            className="mt-4 flex items-center justify-center gap-3 bg-green-600 text-white p-4 rounded-2xl font-black text-lg shadow-xl shadow-green-600/20"
-          >
-            <LayoutDashboard size={22} />
-            ADMIN PANEL
-          </Link>
+          {isAuthenticated && role === "admin" ? (
+            <button
+              onClick={handleLogout}
+              className="mt-4 flex items-center justify-center gap-3 bg-red-600 text-white p-4 rounded-2xl font-black text-lg"
+            >
+              <LogOut size={22} />
+              LOGOUT
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              onClick={() => setOpen(false)}
+              className="mt-4 flex items-center justify-center gap-3 bg-green-600 text-white p-4 rounded-2xl font-black text-lg"
+            >
+              <LayoutDashboard size={22} />
+              ADMIN PANEL
+            </Link>
+          )}
         </div>
       </div>
     </nav>
