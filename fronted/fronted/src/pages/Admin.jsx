@@ -278,6 +278,23 @@ export default function Admin() {
                 />
               </div>
               <div>
+                <label className={labelClass}>Role #</label>
+                <select
+                  name="role"
+                  className={inputClass}
+                  value={playerData.role}
+                  onChange={handlePlayerChange}
+                  required
+                >
+                  <option value="">All Roles</option>
+                  <option value="Batsmen">Batsmen</option>
+                  <option value="Bowlers">Bowlers</option>
+                  <option value="All Rounders">All Rounders</option>
+                  <option value="Wicket Keepers">Wicket Keepers</option>
+                </select>
+              </div>
+
+              <div>
                 <label className={labelClass}>Age</label>
                 <input
                   type="number"
